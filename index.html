@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MOJAVE_MOTHERBOARD_MYSTIC [DEGRADED_BUILD]</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+    <style>
+        @keyframes asciiFloat {
+            0% { transform: translateY(0px) rotate(0deg); }
+            25% { transform: translateY(-2px) rotate(0.5deg); }
+            50% { transform: translateY(0px) rotate(-0.5deg); }
+            75% { transform: translateY(2px) rotate(0.25deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+
+        @keyframes textGlitch {
+            0% { text-shadow: 2px 2px var(--faded-yellow); }
+            25% { text-shadow: -2px -2px var(--worn-brown); }
+            50% { text-shadow: 1px -1px var(--carpet-green); }
+            75% { text-shadow: -1px 1px var(--institutional-gray); }
+            100% { text-shadow: 2px 2px var(--faded-yellow); }
+        }
+
+        @keyframes scanlines {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 30px; }
+        }
+
+        :root {
+            --crt-green: #90EE90;
+            --faded-yellow: #FFE5B4;
+            --worn-brown: #8B4513;
+            --institutional-gray: #808080;
+            --carpet-green: #4A5D23;
+            --beige: #F5F5DC;
+        }
+
+        @keyframes scanline {
+            0% {
+                transform: translateY(-100%);
+            }
+            100% {
+                transform: translateY(100%);
+            }
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.97; }
+            5% { opacity: 0.95; }
+            10% { opacity: 0.9; }
+            15% { opacity: 0.95; }
+            20% { opacity: 0.97; }
+            25% { opacity: 0.95; }
+            30% { opacity: 0.9; }
+            35% { opacity: 0.95; }
+            40% { opacity: 0.97; }
+            45% { opacity: 0.95; }
+            50% { opacity: 0.9; }
+            55% { opacity: 0.95; }
+            60% { opacity: 0.97; }
+            65% { opacity: 0.95; }
+            70% { opacity: 0.9; }
+            75% { opacity: 0.95; }
+            80% { opacity: 0.97; }
+            85% { opacity: 0.95; }
+            90% { opacity: 0.9; }
+            95% { opacity: 0.95; }
+            100% { opacity: 0.97; }
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--institutional-gray);
+            color: var(--crt-green);
+            font-family: "MS Sans Serif", "Pixelated MS Sans Serif", Arial;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><rect width="16" height="16" fill="%23000"/><rect width="14" height="14" x="1" y="1" fill="%23fff"/></svg>') 8 8, auto;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            animation: scanline 10s linear infinite;
+            z-index: 999;
+        }
+
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--institutional-gray);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: "Courier New", monospace;
+            background-image: 
+                linear-gradient(0deg, 
+                    transparent 0%, 
+                    rgba(0, 0, 0, 0.1) 50%,
+                    transparent 100%);
+            background-size: 100% 30px;
+            animation: scanlines 2s linear infinite;
+        }
+
+        .loading-container {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 40px;
+            border: 2px solid var(--worn-brown);
+            box-shadow: 
+                0 0 20px rgba(0, 0, 0, 0.5),
+                inset 0 0 10px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+        }
+
+        .ascii-art {
+            white-space: pre;
+            color: var(--crt-green);
+            text-shadow: 0 0 2px var(--crt-green);
+            animation: 
+                flicker 2s infinite,
+                asciiFloat 4s ease-in-out infinite,
+                textGlitch 1s infinite;
+            font-size: 12px;
+            margin: 0 auto 30px;
+            display: inline-block;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .loading-text {
+            color: var(--faded-yellow);
+            margin: 20px 0;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            animation: textGlitch 2s infinite;
+        }
+
+        .progress-container {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            border: 2px solid var(--worn-brown);
+            background: var(--beige);
+            margin-top: 20px;
+            box-shadow: 
+                inset 2px 2px 4px rgba(0, 0, 0, 0.5),
+                0 2px 5px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            background-image: repeating-linear-gradient(
+                -45deg,
+                transparent,
+                transparent 10px,
+                rgba(0, 0, 0, 0.1) 10px,
+                rgba(0, 0, 0, 0.1) 20px
+            );
+        }
+
+        .progress {
+            width: 0%;
+            height: 100%;
+            background: var(--carpet-green);
+            transition: width 0.5s;
+            position: relative;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .progress-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            top: 50%;
+            transform: translateY(-50%);
+            color: black;
+            font-weight: bold;
+            text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5);
+            z-index: 1;
+            font-size: 12px;
+            font-family: "MS Sans Serif", Arial;
+            mix-blend-mode: difference;
+        }
+
+        .nav-bar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: var(--beige);
+            border-bottom: 2px solid var(--worn-brown);
+            padding: 4px;
+            display: flex;
+            gap: 4px;
+            box-shadow: inset -2px -2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-item {
+            background: var(--institutional-gray);
+            color: black;
+            text-decoration: none;
+            padding: 4px 12px;
+            border-top: 2px solid #fff;
+            border-left: 2px solid #fff;
+            border-bottom: 2px solid #000;
+            border-right: 2px solid #000;
+            font-size: 12px;
+        }
+
+        .nav-item:active {
+            border-top: 2px solid #000;
+            border-left: 2px solid #000;
+            border-bottom: 2px solid #fff;
+            border-right: 2px solid #fff;
+        }
+
+        .content-container {
+            margin-top: 32px;
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 8px;
+            padding: 8px;
+        }
+
+        .sidebar {
+            background: var(--beige);
+            border-top: 2px solid #fff;
+            border-left: 2px solid #fff;
+            border-bottom: 2px solid #000;
+            border-right: 2px solid #000;
+            padding: 8px;
+            height: calc(100vh - 56px);
+            position: sticky;
+            top: 40px;
+            overflow-y: auto;
+        }
+
+        .profile-pic {
+            width: 200px;
+            height: 200px;
+            border: 2px inset var(--worn-brown);
+            margin-bottom: 20px;
+            background: url('/api/placeholder/200/200') center/cover;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .content-box {
+            background: var(--beige);
+            border-top: 2px solid #fff;
+            border-left: 2px solid #fff;
+            border-bottom: 2px solid #000;
+            border-right: 2px solid #000;
+            padding: 8px;
+        }
+
+        .window-title {
+            background: var(--carpet-green);
+            color: var(--beige);
+            padding: 2px 4px;
+            margin: -8px -8px 8px -8px;
+            font-weight: bold;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 2px;
+        }
+
+        .window-button {
+            width: 16px;
+            height: 14px;
+            background: var(--beige);
+            border-top: 1px solid #fff;
+            border-left: 1px solid #fff;
+            border-bottom: 1px solid #000;
+            border-right: 1px solid #000;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .widget {
+            margin-bottom: 8px;
+            border: 2px inset var(--institutional-gray);
+            padding: 8px;
+            background: #000;
+        }
+
+        .data-stream {
+            height: 100px;
+            overflow: hidden;
+            font-family: "Courier New", monospace;
+            font-size: 12px;
+            color: var(--crt-green);
+        }
+
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--beige);
+            border-top: 2px solid #fff;
+            border-left: 2px solid #fff;
+            border-bottom: 2px solid #000;
+            border-right: 2px solid #000;
+            padding: 16px;
+            min-width: 200px;
+            display: none;
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .tab-container {
+            margin-top: 8px;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 0px;
+            margin-bottom: 8px;
+        }
+
+        .tab-button {
+            background: var(--beige);
+            border: none;
+            border-top: 2px solid #fff;
+            border-left: 2px solid #fff;
+            border-bottom: 2px solid #000;
+            border-right: 2px solid #000;
+            padding: 4px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: -2px;
+        }
+
+        .tab-button.active {
+            background: var(--institutional-gray);
+            border-bottom: 2px solid var(--institutional-gray);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 8px;
+            border: 2px inset var(--institutional-gray);
+            background: var(--institutional-gray);
+            color: black;
+            font-size: 12px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .gallery-item {
+            aspect-ratio: 1;
+            background: url('/api/placeholder/100/100') center/cover;
+            border: 2px inset var(--institutional-gray);
+        }
+
+        .gallery-item:active {
+            border: 2px outset var(--institutional-gray);
+        }
+
+        #three-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 16px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--beige);
+            border-left: 1px solid #000;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--institutional-gray);
+            border-top: 1px solid #fff;
+            border-left: 1px solid #fff;
+            border-bottom: 1px solid #000;
+            border-right: 1px solid #000;
+        }
+
+        ::-webkit-scrollbar-button {
+            background: var(--beige);
+            border-top: 1px solid #fff;
+            border-left: 1px solid #fff;
+            border-bottom: 1px solid #000;
+            border-right: 1px solid #000;
+            height: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading-screen">
+        <div class="loading-container">
+            <div class="ascii-art">
+                    
+─────────█▄██▄█
+█▄█▄█▄█▄█▐█┼██▌█▄█▄█▄█▄█
+███┼█████▐████▌█████┼███
+█████████▐████▌█████████
+
+                  ╔═════════════════════════════╗
+                  ║     MOJAVE OS v1.0.137      ║
+                  ║  SYSTEM INITIALIZATION...    ║
+                  ╚═════════════════════════════╝
+                  
+             > CHECKING MEMORY SEGMENTS...
+             > LOADING SYSTEM DRIVERS...
+             > SCANNING I/O PORTS...
+             > INITIALIZING UI MATRIX...
+             > ESTABLISHING LINK...
+            </div>
+            <div class="loading-text" id="loading-status">
+                SYSTEM BOOT SEQUENCE INITIATED
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress"></div>
+                    <div class="progress-text">Loading... 0%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="three-container"></div>
+
+    <nav class="nav-bar">
+        <a href="#" class="nav-item">File</a>
+        <a href="#" class="nav-item">Edit</a>
+        <a href="#" class="nav-item">View</a>
+        <a href="#" class="nav-item">Tools</a>
+        <a href="#" class="nav-item">Help</a>
+    </nav>
+
+    <div class="content-container">
+        <aside class="sidebar">
+            <div class="window-title">
+                System Control
+                <div class="window-controls">
+                    <div class="window-button">_</div>
+                    <div class="window-button">□</div>
+                    <div class="window-button">×</div>
+                </div>
+            </div>
+            <div class="profile-pic"></div>
+            <div class="widget">
+                <h3>SYSTEM_STATUS</h3>
+                <div class="data-stream" id="status-stream"></div>
+            </div>
+            <div class="widget">
+                <h3>ERROR_LOG</h3>
+                <div class="data-stream" id="error-stream"></div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="content-box">
+                <div class="window-title">
+                    Terminal Access
+                    <div class="window-controls">
+                        <div class="window-button">_</div>
+                        <div class="window-button">□</div>
+                        <div class="window-button">×</div>
+                    </div>
+                </div>
+                <div class="tab-container">
+                    <div class="tab-buttons">
+                        <button class="tab-button active">Console</button>
+                        <button class="tab-button">Network</button>
+                        <button class="tab-button">Storage</button>
+                    </div>
+                    <div class="tab-content active">
+                        <p>C:\MOJAVE\SYSTEM> Accessing mainframe...</p>
+                        <div class="gallery">
+                            <div class="gallery-item"></div>
+                            <div class="gallery-item"></div>
+                            <div class="gallery-item"></div>
+                            <div class="gallery-item"></div>
+                            <div class="gallery-item"></div>
+                            <div class="gallery-item"></div>
+                        </div>
+                    </div>
+                    <div class="tab-content">
+                        <p>Network status: DEGRADED</p>
+                        <p>Packets lost: 847</p>
+                        <p>Last connection: 7 YEARS AGO</p>
+                    </div>
+                    <div class="tab-content">
+                        <p>Disk fragmentation: 89%</p>
+                        <p>Sectors corrupted: 1,398</p>
+                        <p>Data integrity: COMPROMISED</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-box">
+                <div class="window-title">
+                    System Monitor
+                    <div class="window-controls">
+                        <div class="window-button">_</div>
+                        <div class="window-button">□</div>
+                        <div class="window-button">×</div>
+                    </div>
+                </div>
+                
+                <!-- Memory Usage Widget -->
+                <div class="widget" style="margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span>Memory Usage:</span>
+                        <span id="memory-percent">87%</span>
+                    </div>
+                    <div style="width: 100%; height: 20px; border: 2px inset var(--institutional-gray);">
+                        <div id="memory-bar" style="width: 87%; height: 100%; background: var(--carpet-green);"></div>
+                    </div>
+                </div>
+
+                <!-- System Clock -->
+                <div class="widget" style="margin-bottom: 16px;">
+                    <div style="font-family: 'Digital', monospace; font-size: 24px; text-align: center;" id="system-clock">
+                        00:00:00
+                    </div>
+                    <div style="text-align: center; font-size: 12px;" id="system-date">
+                        01/01/98
+                    </div>
+                </div>
+
+                <!-- Active Processes -->
+                <div class="widget" style="margin-bottom: 16px;">
+                    <h3 style="margin: 0 0 8px 0;">Active Processes</h3>
+                    <div id="process-list" style="font-size: 12px;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>KERNEL32.SYS</span>
+                            <span>RUNNING</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>MOJAVE.EXE</span>
+                            <span>RUNNING</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>SHRINE.DLL</span>
+                            <span class="blink">ERROR</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Network Traffic -->
+                <div class="widget">
+                    <h3 style="margin: 0 0 8px 0;">Network Activity</h3>
+                    <canvas id="network-graph" style="width: 100%; height: 60px;"></canvas>
+                    <div id="network-stats" style="font-size: 12px; margin-top: 8px;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Packets In:</span>
+                            <span id="packets-in">0</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Packets Out:</span>
+                            <span id="packets-out">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pet Daemon Widget -->
+                <div class="widget" style="margin-top: 16px; text-align: center;">
+                    <h3 style="margin: 0 0 8px 0;">System Daemon</h3>
+                    <div id="daemon-face" style="font-size: 24px;">(^_^)</div>
+                    <div id="daemon-status" style="font-size: 12px;">STATUS: ACTIVE</div>
+                </div>
+            </div>
+
+            <!-- Memory Dump Window -->
+            <div class="content-box">
+                <div class="window-title">
+                    Memory Dump
+                    <div class="window-controls">
+                        <div class="window-button">_</div>
+                        <div class="window-button">□</div>
+                        <div class="window-button">×</div>
+                    </div>
+                </div>
+                <div id="memory-feed" class="data-stream">
+                    LOAD ERROR 0xF7A9: Memory sectors corrupted
+                    Attempting recovery...
+                    ...
+                    Fragment retrieved:
+                    [Date Unknown]
+                    > they found another terminal in the basement today
+                    > screen was still warm
+                    > someone's been running calculations
+                    > maintenance says the power's been off since '98
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="popup" id="system-popup">
+        <div class="window-title">
+            System Alert
+            <div class="window-controls">
+                <div class="window-button">×</div>
+            </div>
+        </div>
+        <p>UNAUTHORIZED_ACCESS_DETECTED</p>
+        <p>Multiple login attempts from UNKNOWN terminal</p>
+        <div style="text-align: center; margin-top: 16px;">
+            <button class="nav-item" onclick="this.parentElement.parentElement.style.display='none'">OK</button>
+        </div>
+    </div>
+
+    <script>
+        // Loading screen animation
+        let progress = 0;
+        const progressBar = document.querySelector('.progress');
+        const progressText = document.querySelector('.progress-text');
+        const loadingScreen = document.getElementById('loading-screen');
+        const loadingStatus = document.getElementById('loading-status');
+
+        const statusMessages = [
+            "INITIALIZING BOOT SEQUENCE",
+            "CHECKING MEMORY INTEGRITY",
+            "LOADING SYSTEM DRIVERS",
+            "SCANNING FOR PERIPHERALS",
+            "ESTABLISHING NETWORK LINK",
+            "MOUNTING FILE SYSTEMS",
+            "INITIALIZING USER INTERFACE",
+            "CALIBRATING SYSTEM CLOCK",
+            "PERFORMING SECURITY SCAN",
+            "LOADING USER PROFILE"
+        ];
+
+        let currentStatus = 0;
+        const statusInterval = setInterval(() => {
+            loadingStatus.textContent = statusMessages[currentStatus];
+            currentStatus = (currentStatus + 1) % statusMessages.length;
+        }, 1000);
+
+        const loadingInterval = setInterval(() => {
+            progress += Math.random() * 3;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(loadingInterval);
+                clearInterval(statusInterval);
+                loadingStatus.textContent = "SYSTEM READY";
+                setTimeout(() => {
+                    loadingScreen.style.opacity = 0;
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                    }, 1000);
+                }, 500);
+            }
+            progressBar.style.width = progress + '%';
+            progressText.textContent = `Loading... ${Math.floor(progress)}%`;
+        }, 200);
+
+        // Three.js background
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('three-container').appendChild(renderer.domElement);
+
+        // Create a grid of cubes
+        const cubes = [];
+        const gridSize = 10;
+        const spacing = 2;
+
+        for (let x = 0; x < gridSize; x++) {
+            for (let y = 0; y < gridSize; y++) {
+                const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+                const material = new THREE.MeshBasicMaterial({
+                    color: 0x4A5D23,
+                    wireframe: true
+                });
+                const cube = new THREE.Mesh(geometry, material);
+                cube.position.x = (x - gridSize/2) * spacing;
+                cube.position.y = (y - gridSize/2) * spacing;
+                cube.position.z = Math.sin(x/2) * Math.cos(y/2) * 2;
+                scene.add(cube);
+                cubes.push(cube);
+            }
+        }
+
+        camera.position.z = 15;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            cubes.forEach((cube, i) => {
+                cube.rotation.x += 0.001;
+                cube.rotation.y += 0.002;
+                cube.position.z = Math.sin(Date.now() * 0.001 + i) * 2;
+            });
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Tab switching
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabButtons.forEach((button, index) => {
+            button.addEventListener('click', () => {
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+                button.classList.add('active');
+                tabContents[index].classList.add('active');
+            });
+        });
+
+        // Random data streams
+        function updateDataStream(elementId, prefix) {
+            const element = document.getElementById(elementId);
+            setInterval(() => {
+                const errors = [
+                    'MEMORY_FAULT',
+                    'SECTOR_UNREADABLE',
+                    'DATA_CORRUPTED',
+                    'ACCESS_DENIED',
+                    'BUFFER_OVERFLOW'
+                ];
+                const error = errors[Math.floor(Math.random() * errors.length)];
+                const timestamp = new Date().toLocaleTimeString();
+                element.innerHTML += `[${timestamp}] ${prefix}_${error}\n`;
+                if (element.scrollHeight > element.clientHeight) {
+                    element.innerHTML = element.innerHTML.split('\n').slice(-5).join('\n');
+                }
+            }, 2000);
+        }
+
+        updateDataStream('status-stream', 'STATUS');
+        updateDataStream('error-stream', 'ERROR');
+
+        // Random popups
+        setInterval(() => {
+            const popup = document.getElementById('system-popup');
+            if (Math.random() > 0.7) {
+                popup.style.display = 'block';
+                setTimeout(() => {
+                    popup.style.display = 'none';
+                }, 3000);
+            }
+        }, 10000);
+
+        // System Clock
+        function updateClock() {
+            const clock = document.getElementById('system-clock');
+            const date = document.getElementById('system-date');
+            const now = new Date();
+            
+            clock.textContent = now.toLocaleTimeString('en-US', { 
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+
+            // Randomly glitch the date to show old dates
+            if (Math.random() > 0.8) {
+                const randomYear = Math.floor(Math.random() * (99 - 95) + 95);
+                const randomMonth = Math.floor(Math.random() * 12) + 1;
+                const randomDay = Math.floor(Math.random() * 28) + 1;
+                date.textContent = `${randomMonth.toString().padStart(2, '0')}/${randomDay.toString().padStart(2, '0')}/${randomYear}`;
+            }
+        }
+        setInterval(updateClock, 1000);
+
+        // Memory Usage Animation
+        function updateMemoryUsage() {
+            const memoryBar = document.getElementById('memory-bar');
+            const memoryPercent = document.getElementById('memory-percent');
+            const usage = Math.floor(Math.random() * 20) + 75; // Between 75-95%
+            memoryBar.style.width = `${usage}%`;
+            memoryPercent.textContent = `${usage}%`;
+        }
+        setInterval(updateMemoryUsage, 3000);
+
+        // Network Graph
+        const networkCanvas = document.getElementById('network-graph');
+        const netCtx = networkCanvas.getContext('2d');
+        const packetsIn = document.getElementById('packets-in');
+        const packetsOut = document.getElementById('packets-out');
+        
+        let networkData = Array(30).fill(0);
+
+        function updateNetworkGraph() {
+            // Generate new data point
+            const newValue = Math.random() * 50;
+            networkData.push(newValue);
+            networkData.shift();
+
+            // Update packet counters
+            const inCount = Math.floor(Math.random() * 1000);
+            const outCount = Math.floor(Math.random() * 1000);
+            packetsIn.textContent = inCount;
+            packetsOut.textContent = outCount;
+
+            // Draw graph
+            netCtx.fillStyle = 'var(--institutional-gray)';
+            netCtx.fillRect(0, 0, networkCanvas.width, networkCanvas.height);
+            
+            netCtx.beginPath();
+            netCtx.moveTo(0, networkCanvas.height - networkData[0]);
+            
+            for (let i = 1; i < networkData.length; i++) {
+                netCtx.lineTo(i * (networkCanvas.width / networkData.length), 
+                             networkCanvas.height - networkData[i]);
+            }
+            
+            netCtx.strokeStyle = 'var(--carpet-green)';
+            netCtx.stroke();
+        }
+        setInterval(updateNetworkGraph, 1000);
+
+        // Pet Daemon
+        const daemonFaces = ['(^_^)', '(-_-)', '(>_<)', '(O_O)', '(T_T)'];
+        let currentFace = 0;
+        
+        function updateDaemon() {
+            const daemon = document.getElementById('daemon-face');
+            const status = document.getElementById('daemon-status');
+            
+            currentFace = (currentFace + 1) % daemonFaces.length;
+            daemon.textContent = daemonFaces[currentFace];
+            
+            // Random status messages
+            const statuses = ['ACTIVE', 'SCANNING', 'THINKING', 'WATCHING', 'SLEEPING'];
+            status.textContent = 'STATUS: ' + statuses[Math.floor(Math.random() * statuses.length)];
+        }
+        setInterval(updateDaemon, 5000);
+    </script>
+</body>
+</html>
